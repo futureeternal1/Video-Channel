@@ -13,7 +13,7 @@ require_once("Rest.inc.php");
 			// Init parent contructor
 			parent::__construct();
 			// Initiate Database connection
-			$this->dbConnect();	
+			$this->dbConnect();
 		}
 
 		/*
@@ -40,7 +40,7 @@ require_once("Rest.inc.php");
 				echo 'processApi - method not exist';
 				exit;
 			}
-		}		
+		}
 
 		/* Api Checker */
 		private function check_connection() {
@@ -62,60 +62,70 @@ require_once("Rest.inc.php");
 
 			include "../includes/config.php";
 
-			$jsonObj = array();	
+			$jsonObj = array();
 
-			$query = "SELECT * FROM tbl_gallery WHERE id='".$_GET['id']."'";
-			$sql = mysqli_query($connect, $query) or die(mysqli_error());
+			$id = isset($_GET['id']) ? $_GET['id'] : '';
 
-			while ($data = mysqli_fetch_assoc($sql)) {
-				
+			$stmt = $this->mysqli->prepare("SELECT id, video_title, total_views FROM tbl_gallery WHERE id = ?");
+			$stmt->bind_param("s", $id);
+			$stmt->execute();
+			$result = $stmt->get_result();
+
+			while ($data = $result->fetch_assoc()) {
+
 				$row['id'] = $data['id'];
 				$row['video_title'] = $data['video_title'];
 				$row['total_views'] = $data['total_views'];
-				
+
 				array_push($jsonObj, $row);
-				
+
 			}
 
-			$view_qry = mysqli_query($connect, "UPDATE tbl_gallery SET total_views = total_views + 1 WHERE id = '".$_GET['id']."'");
-			
+			$stmt_update = $this->mysqli->prepare("UPDATE tbl_gallery SET total_views = total_views + 1 WHERE id = ?");
+			$stmt_update->bind_param("s", $id);
+			$stmt_update->execute();
+
 
 			$set['result'] = $jsonObj;
-			
+
 			header( 'Content-Type: application/json; charset=utf-8' );
 			echo $val= str_replace('\\/', '/', json_encode($set, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-			die();	
+			die();
 
 		}
 
 		private function get_videos() {
-			
+
 			include "../includes/config.php";
 		    $setting_qry    = "SELECT * FROM tbl_settings where id = '1'";
 		    $setting_result = mysqli_query($connect, $setting_qry);
 		    $settings_row   = mysqli_fetch_assoc($setting_result);
-		    $api_key    = $settings_row['api_key']; 
+		    $api_key    = $settings_row['api_key'];
 
 			if (isset($_GET['api_key'])) {
 
 				$access_key_received = $_GET['api_key'];
-				
+
 				if ($access_key_received == $api_key) {
 
-					$sort = $_GET['sort'];
+					$sort = isset($_GET['sort']) ? $_GET['sort'] : 'n.id DESC';
+					$allowed_sort = array('n.id DESC', 'n.id ASC', 'n.total_views DESC', 'n.total_views ASC');
+					if (!in_array($sort, $allowed_sort)) {
+						$sort = 'n.id DESC';
+					}
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 					$limit = isset($this->_request['count']) ? ((int)$this->_request['count']) : 10;
 					$page = isset($this->_request['page']) ? ((int)$this->_request['page']) : 1;
-					
+
 					$offset = ($page * $limit) - $limit;
 					$count_total = $this->get_count_result("SELECT COUNT(DISTINCT n.id) FROM tbl_gallery n WHERE n.video_status = '1' ");
-					
-					$query = "SELECT DISTINCT 
+
+					$query = "SELECT DISTINCT
 								n.id AS 'vid',
 								n.cat_id,
-								n.video_title, 
-								n.video_url, 
+								n.video_title,
+								n.video_url,
 								n.video_id,
 								n.video_thumbnail,
 								n.video_duration,
@@ -124,17 +134,17 @@ require_once("Rest.inc.php");
 								n.size,
 								n.total_views,
 								n.date_time,
-								
+
 								c.category_name
-								
-							FROM 
-								tbl_gallery n, 
-								tbl_category c 
-								
-							WHERE 
+
+							FROM
+								tbl_gallery n,
+								tbl_category c
+
+							WHERE
 								n.video_status = '1' AND
 								n.cat_id = c.cid ORDER BY $sort LIMIT $limit OFFSET $offset";
-							  
+
 					$post = $this->get_list_result($query);
 					$count = count($post);
 					$respon = array(
@@ -150,33 +160,33 @@ require_once("Rest.inc.php");
 			}
 
 		}
-		
+
 		private function get_posts() {
-			
+
 			include "../includes/config.php";
 		    $setting_qry    = "SELECT * FROM tbl_settings where id = '1'";
 		    $setting_result = mysqli_query($connect, $setting_qry);
 		    $settings_row   = mysqli_fetch_assoc($setting_result);
-		    $api_key    = $settings_row['api_key']; 
+		    $api_key    = $settings_row['api_key'];
 
 			if (isset($_GET['api_key'])) {
 
 				$access_key_received = $_GET['api_key'];
-				
+
 				if ($access_key_received == $api_key) {
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 					$limit = isset($this->_request['count']) ? ((int)$this->_request['count']) : 10;
 					$page = isset($this->_request['page']) ? ((int)$this->_request['page']) : 1;
-					
+
 					$offset = ($page * $limit) - $limit;
 					$count_total = $this->get_count_result("SELECT COUNT(DISTINCT n.id) FROM tbl_gallery n WHERE n.video_status = '1' ");
-					
-					$query = "SELECT DISTINCT 
+
+					$query = "SELECT DISTINCT
 								n.id AS 'vid',
 								n.cat_id,
-								n.video_title, 
-								n.video_url, 
+								n.video_title,
+								n.video_url,
 								n.video_id,
 								n.video_thumbnail,
 								n.video_duration,
@@ -185,16 +195,16 @@ require_once("Rest.inc.php");
 								n.size,
 								n.total_views,
 								n.date_time,
-								
+
 								c.category_name
-								
-							FROM 
-								tbl_gallery n, 
-								tbl_category c 
-								
+
+							FROM
+								tbl_gallery n,
+								tbl_category c
+
 							WHERE n.video_status = '1' AND
 								n.cat_id = c.cid ORDER BY n.id DESC LIMIT $limit OFFSET $offset";
-							  
+
 					$post = $this->get_list_result($query);
 					$count = count($post);
 					$respon = array(
@@ -213,31 +223,31 @@ require_once("Rest.inc.php");
 
 
 		private function get_popular() {
-			
+
 			include "../includes/config.php";
 		    $setting_qry    = "SELECT * FROM tbl_settings where id = '1'";
 		    $setting_result = mysqli_query($connect, $setting_qry);
 		    $settings_row   = mysqli_fetch_assoc($setting_result);
-		    $api_key    = $settings_row['api_key']; 
+		    $api_key    = $settings_row['api_key'];
 
 			if (isset($_GET['api_key'])) {
 
 				$access_key_received = $_GET['api_key'];
-				
+
 				if ($access_key_received == $api_key) {
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 					$limit = isset($this->_request['count']) ? ((int)$this->_request['count']) : 10;
 					$page = isset($this->_request['page']) ? ((int)$this->_request['page']) : 1;
-					
+
 					$offset = ($page * $limit) - $limit;
 					$count_total = $this->get_count_result("SELECT COUNT(DISTINCT n.id) FROM tbl_gallery n WHERE n.video_status = '1' ");
-					
-					$query = "SELECT DISTINCT 
+
+					$query = "SELECT DISTINCT
 								n.id AS 'vid',
 								n.cat_id,
-								n.video_title, 
-								n.video_url, 
+								n.video_title,
+								n.video_url,
 								n.video_id,
 								n.video_thumbnail,
 								n.video_duration,
@@ -246,16 +256,16 @@ require_once("Rest.inc.php");
 								n.size,
 								n.total_views,
 								n.date_time,
-								
+
 								c.category_name
-								
-							FROM 
-								tbl_gallery n, 
-								tbl_category c 
-								
+
+							FROM
+								tbl_gallery n,
+								tbl_category c
+
 							WHERE n.video_status = '1' AND
 								n.cat_id = c.cid ORDER BY n.total_views DESC LIMIT $limit OFFSET $offset";
-							  
+
 					$post = $this->get_list_result($query);
 					$count = count($post);
 					$respon = array(
@@ -273,31 +283,31 @@ require_once("Rest.inc.php");
 		}
 
 		private function get_oldest() {
-			
+
 			include "../includes/config.php";
 		    $setting_qry    = "SELECT * FROM tbl_settings where id = '1'";
 		    $setting_result = mysqli_query($connect, $setting_qry);
 		    $settings_row   = mysqli_fetch_assoc($setting_result);
-		    $api_key    = $settings_row['api_key']; 
+		    $api_key    = $settings_row['api_key'];
 
 			if (isset($_GET['api_key'])) {
 
 				$access_key_received = $_GET['api_key'];
-				
+
 				if ($access_key_received == $api_key) {
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 					$limit = isset($this->_request['count']) ? ((int)$this->_request['count']) : 10;
 					$page = isset($this->_request['page']) ? ((int)$this->_request['page']) : 1;
-					
+
 					$offset = ($page * $limit) - $limit;
 					$count_total = $this->get_count_result("SELECT COUNT(DISTINCT n.id) FROM tbl_gallery n WHERE n.video_status = '1' ");
-					
-					$query = "SELECT DISTINCT 
+
+					$query = "SELECT DISTINCT
 								n.id AS 'vid',
 								n.cat_id,
-								n.video_title, 
-								n.video_url, 
+								n.video_title,
+								n.video_url,
 								n.video_id,
 								n.video_thumbnail,
 								n.video_duration,
@@ -306,16 +316,16 @@ require_once("Rest.inc.php");
 								n.size,
 								n.total_views,
 								n.date_time,
-								
+
 								c.category_name
-								
-							FROM 
-								tbl_gallery n, 
-								tbl_category c 
-								
+
+							FROM
+								tbl_gallery n,
+								tbl_category c
+
 							WHERE n.video_status = '1' AND
 								n.cat_id = c.cid ORDER BY n.id ASC LIMIT $limit OFFSET $offset";
-							  
+
 					$post = $this->get_list_result($query);
 					$count = count($post);
 					$respon = array(
@@ -335,13 +345,15 @@ require_once("Rest.inc.php");
 
 		public function get_post_detail() {
 
-	    	$id = $_GET['id'];
+		$id = isset($_GET['id']) ? $_GET['id'] : 0;
 
 		    include "../includes/config.php";
 
-	    	$setting_qry    = "SELECT cat_id FROM tbl_gallery WHERE id = $id";
-			$setting_result = mysqli_query($connect, $setting_qry);
-			$settings_row   = mysqli_fetch_assoc($setting_result);
+			$stmt_cat = $this->mysqli->prepare("SELECT cat_id FROM tbl_gallery WHERE id = ?");
+			$stmt_cat->bind_param("i", $id);
+			$stmt_cat->execute();
+			$cat_result = $stmt_cat->get_result();
+			$settings_row   = $cat_result->fetch_assoc();
 			$category_id    = $settings_row['cat_id'];
 
 			if($this->get_request_method() != "GET") $this->response('',406);
@@ -349,8 +361,8 @@ require_once("Rest.inc.php");
 			$query_post = "SELECT DISTINCT
 								n.id AS 'vid',
 								n.cat_id,
-								n.video_title, 
-								n.video_url, 
+								n.video_title,
+								n.video_url,
 								n.video_id,
 								n.video_thumbnail,
 								n.video_duration,
@@ -359,23 +371,23 @@ require_once("Rest.inc.php");
 								n.size,
 								n.total_views,
 								n.date_time,
-									
-								c.category_name			
 
-							FROM 
-								tbl_gallery n, 
-								tbl_category c 
+								c.category_name
 
-							WHERE n.cat_id = c.cid AND n.video_status = '1' AND n.id = $id
-									 
+							FROM
+								tbl_gallery n,
+								tbl_category c
+
+							WHERE n.cat_id = c.cid AND n.video_status = '1' AND n.id = ?
+
 							LIMIT 1";
 
 			$query_suggested = "SELECT DISTINCT
 
 								n.id AS 'vid',
 								n.cat_id,
-								n.video_title, 
-								n.video_url, 
+								n.video_title,
+								n.video_url,
 								n.video_id,
 								n.video_thumbnail,
 								n.video_duration,
@@ -384,41 +396,54 @@ require_once("Rest.inc.php");
 								n.size,
 								n.total_views,
 								n.date_time,
-								
+
 								c.category_name
-								  	
-								FROM 
-									tbl_gallery n, 
+
+								FROM
+									tbl_gallery n,
 									tbl_category c
 
-								  WHERE n.cat_id = c.cid AND n.video_status = '1' AND n.id != $id AND n.cat_id = $category_id
+								  WHERE n.cat_id = c.cid AND n.video_status = '1' AND n.id != ? AND n.cat_id = ?
 
-								  ORDER BY n.id 
+								  ORDER BY n.id
 
 								  DESC LIMIT 5";
 
-			$post = $this->get_one_detail($query_post);
-			$suggested = $this->get_list_result($query_suggested);
+			$stmt_post = $this->mysqli->prepare($query_post);
+			$stmt_post->bind_param("i", $id);
+			$stmt_post->execute();
+			$post_res = $stmt_post->get_result();
+			$post = $post_res->num_rows > 0 ? $post_res->fetch_assoc() : array();
+
+			$stmt_suggested = $this->mysqli->prepare($query_suggested);
+			$stmt_suggested->bind_param("ii", $id, $category_id);
+			$stmt_suggested->execute();
+			$suggested_res = $stmt_suggested->get_result();
+			$suggested = array();
+			while ($s_row = $suggested_res->fetch_assoc()) {
+				$suggested[] = $s_row;
+			}
+
 			$count = count($post);
 			$respon = array(
 				'status' => 'ok', 'post' => $post, 'suggested' => $suggested
 			);
 			$this->response($this->json($respon), 200);
 
-	    }		
-		
+	    }
+
 		private function get_category_index() {
 
 			include "../includes/config.php";
 		    $setting_qry    = "SELECT * FROM tbl_settings where id = '1'";
 		    $setting_result = mysqli_query($connect, $setting_qry);
 		    $settings_row   = mysqli_fetch_assoc($setting_result);
-		    $api_key    = $settings_row['api_key']; 
+		    $api_key    = $settings_row['api_key'];
 
 			if (isset($_GET['api_key'])) {
 
 				$access_key_received = $_GET['api_key'];
-				
+
 				if ($access_key_received == $api_key) {
 
 					if($this->get_request_method() != "GET") $this->response('',406);
@@ -448,42 +473,51 @@ require_once("Rest.inc.php");
 		    $setting_qry    = "SELECT * FROM tbl_settings WHERE id = '1'";
 		    $setting_result = mysqli_query($connect, $setting_qry);
 		    $settings_row   = mysqli_fetch_assoc($setting_result);
-		    $api_key    = $settings_row['api_key']; 
+		    $api_key    = $settings_row['api_key'];
 
 			if (isset($_GET['api_key'])) {
 
 				$access_key_received = $_GET['api_key'];
-				
+
 				if ($access_key_received == $api_key) {
 
-					$id = $_GET['id'];
-					$sort = $_GET['sort'];
+					$id = isset($_GET['id']) ? $_GET['id'] : 0;
+					$sort = isset($_GET['sort']) ? $_GET['sort'] : 'n.id DESC';
+					$allowed_sort = array('n.id DESC', 'n.id ASC', 'n.total_views DESC', 'n.total_views ASC');
+					if (!in_array($sort, $allowed_sort)) {
+						$sort = 'n.id DESC';
+					}
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 					$limit = isset($this->_request['count']) ? ((int)$this->_request['count']) : 10;
 					$page = isset($this->_request['page']) ? ((int)$this->_request['page']) : 1;
-					
+
 					$offset = ($page * $limit) - $limit;
-					$count_total = $this->get_count_result("SELECT COUNT(DISTINCT id) FROM tbl_gallery WHERE video_status = '1' AND cat_id = '$id'");
-					
-					$query = "SELECT DISTINCT 
+
+					$stmt_total = $this->mysqli->prepare("SELECT COUNT(DISTINCT id) FROM tbl_gallery WHERE video_status = '1' AND cat_id = ?");
+					$stmt_total->bind_param("i", $id);
+					$stmt_total->execute();
+					$res_total = $stmt_total->get_result();
+					$count_total = $res_total->fetch_row()[0];
+
+					$query = "SELECT DISTINCT
 								cid,
 								category_name,
 								category_image
-								
-							FROM
-								tbl_category 
 
-							WHERE 
-								cid = '$id'
+							FROM
+								tbl_category
+
+							WHERE
+								cid = ?
 
 							ORDER BY cid DESC";
 
-					$query2 = "SELECT DISTINCT 
+					$query2 = "SELECT DISTINCT
 								n.id AS 'vid',
 								n.cat_id,
-								n.video_title, 
-								n.video_url, 
+								n.video_title,
+								n.video_url,
 								n.video_id,
 								n.video_thumbnail,
 								n.video_duration,
@@ -492,19 +526,30 @@ require_once("Rest.inc.php");
 								n.size,
 								n.total_views,
 								n.date_time,
-								
+
 								c.category_name
-								
-							FROM 
-								tbl_gallery n, 
-								tbl_category c 
-								
-							WHERE 
+
+							FROM
+								tbl_gallery n,
+								tbl_category c
+
+							WHERE
 								n.video_status = '1' AND
-								n.cat_id = c.cid AND c.cid = '$id' ORDER BY $sort LIMIT $limit OFFSET $offset";
-							  
-					$category = $this->get_category_result($query);
-					$post = $this->get_list_result($query2);
+								n.cat_id = c.cid AND c.cid = ? ORDER BY $sort LIMIT ? OFFSET ?";
+
+					$stmt1 = $this->mysqli->prepare($query);
+					$stmt1->bind_param("i", $id);
+					$stmt1->execute();
+					$category = $stmt1->get_result()->fetch_assoc();
+
+					$stmt2 = $this->mysqli->prepare($query2);
+					$stmt2->bind_param("iii", $id, $limit, $offset);
+					$stmt2->execute();
+					$res2 = $stmt2->get_result();
+					$post = array();
+					while ($row2 = $res2->fetch_assoc()) {
+						$post[] = $row2;
+					}
 					$count = count($post);
 					$respon = array(
 						'status' => 'ok', 'count' => $count, 'count_total' => $count_total, 'pages' => $page, 'category' => $category, 'posts' => $post
@@ -526,41 +571,46 @@ require_once("Rest.inc.php");
 		    $setting_qry    = "SELECT * FROM tbl_settings where id = '1'";
 		    $setting_result = mysqli_query($connect, $setting_qry);
 		    $settings_row   = mysqli_fetch_assoc($setting_result);
-		    $api_key    = $settings_row['api_key']; 
+		    $api_key    = $settings_row['api_key'];
 
 			if (isset($_GET['api_key'])) {
 
 				$access_key_received = $_GET['api_key'];
-				
+
 				if ($access_key_received == $api_key) {
 
-					$id = $_GET['id'];
+					$id = isset($_GET['id']) ? $_GET['id'] : 0;
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 					$limit = isset($this->_request['count']) ? ((int)$this->_request['count']) : 10;
 					$page = isset($this->_request['page']) ? ((int)$this->_request['page']) : 1;
-					
+
 					$offset = ($page * $limit) - $limit;
-					$count_total = $this->get_count_result("SELECT COUNT(DISTINCT id) FROM tbl_gallery WHERE video_status = '1' AND cat_id = '$id'");
-					
-					$query = "SELECT DISTINCT 
+
+					$stmt_total = $this->mysqli->prepare("SELECT COUNT(DISTINCT id) FROM tbl_gallery WHERE video_status = '1' AND cat_id = ?");
+					$stmt_total->bind_param("i", $id);
+					$stmt_total->execute();
+					$res_total = $stmt_total->get_result();
+					$count_total = $res_total->fetch_row()[0];
+
+					$query = "SELECT DISTINCT
 								cid,
 								category_name,
 								category_image
-								
-							FROM
-								tbl_category 
 
-							WHERE 
-								cid = '$id'
+							FROM
+								tbl_category
+
+							WHERE
+								cid = ?
 
 							ORDER BY cid DESC";
 
-					$query2 = "SELECT DISTINCT 
+					$query2 = "SELECT DISTINCT
 								n.id AS 'vid',
 								n.cat_id,
-								n.video_title, 
-								n.video_url, 
+								n.video_title,
+								n.video_url,
 								n.video_id,
 								n.video_thumbnail,
 								n.video_duration,
@@ -569,19 +619,30 @@ require_once("Rest.inc.php");
 								n.size,
 								n.total_views,
 								n.date_time,
-								
+
 								c.category_name
-								
-							FROM 
-								tbl_gallery n, 
-								tbl_category c 
-								
-							WHERE 
+
+							FROM
+								tbl_gallery n,
+								tbl_category c
+
+							WHERE
 								n.video_status = '1' AND
-								n.cat_id = c.cid AND c.cid = '$id' ORDER BY n.id DESC LIMIT $limit OFFSET $offset";
-							  
-					$category = $this->get_category_result($query);
-					$post = $this->get_list_result($query2);
+								n.cat_id = c.cid AND c.cid = ? ORDER BY n.id DESC LIMIT ? OFFSET ?";
+
+					$stmt1 = $this->mysqli->prepare($query);
+					$stmt1->bind_param("i", $id);
+					$stmt1->execute();
+					$category = $stmt1->get_result()->fetch_assoc();
+
+					$stmt2 = $this->mysqli->prepare($query2);
+					$stmt2->bind_param("iii", $id, $limit, $offset);
+					$stmt2->execute();
+					$res2 = $stmt2->get_result();
+					$post = array();
+					while ($row2 = $res2->fetch_assoc()) {
+						$post[] = $row2;
+					}
 					$count = count($post);
 					$respon = array(
 						'status' => 'ok', 'count' => $count, 'count_total' => $count_total, 'pages' => $page, 'category' => $category, 'posts' => $post
@@ -603,28 +664,33 @@ require_once("Rest.inc.php");
 		    $setting_qry    = "SELECT * FROM tbl_settings where id = '1'";
 		    $setting_result = mysqli_query($connect, $setting_qry);
 		    $settings_row   = mysqli_fetch_assoc($setting_result);
-		    $api_key    = $settings_row['api_key']; 
+		    $api_key    = $settings_row['api_key'];
 
 			if (isset($_GET['api_key'])) {
 
 				$access_key_received = $_GET['api_key'];
-				
+
 				if ($access_key_received == $api_key) {
 
-					$search = $_GET['search'];
+					$search = isset($_GET['search']) ? $_GET['search'] : '';
+					$search_param = "%$search%";
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 					$limit = isset($this->_request['count']) ? ((int)$this->_request['count']) : 10;
 					$page = isset($this->_request['page']) ? ((int)$this->_request['page']) : 1;
-					
-					$offset = ($page * $limit) - $limit;
-					$count_total = $this->get_count_result("SELECT COUNT(DISTINCT n.id) FROM tbl_gallery n, tbl_category c WHERE n.cat_id = c.cid AND n.video_status = '1' AND (n.video_title LIKE '%$search%' OR n.video_description LIKE '%$search%')");
 
-					$query = "SELECT DISTINCT 
+					$offset = ($page * $limit) - $limit;
+
+					$stmt_total = $this->mysqli->prepare("SELECT COUNT(DISTINCT n.id) FROM tbl_gallery n, tbl_category c WHERE n.cat_id = c.cid AND n.video_status = '1' AND (n.video_title LIKE ? OR n.video_description LIKE ?)");
+					$stmt_total->bind_param("ss", $search_param, $search_param);
+					$stmt_total->execute();
+					$count_total = $stmt_total->get_result()->fetch_row()[0];
+
+					$query = "SELECT DISTINCT
 								n.id AS 'vid',
 								n.cat_id,
-								n.video_title, 
-								n.video_url, 
+								n.video_title,
+								n.video_url,
 								n.video_id,
 								n.video_thumbnail,
 								n.video_duration,
@@ -633,18 +699,25 @@ require_once("Rest.inc.php");
 								n.size,
 								n.total_views,
 								n.date_time,
-								
-								c.category_name
-								
-							FROM 
-								tbl_gallery n, 
-								tbl_category c 
-								
-							WHERE n.cat_id = c.cid AND n.video_status = '1' AND (n.video_title LIKE '%$search%' OR n.video_description LIKE '%$search%') 
 
-							LIMIT $limit OFFSET $offset";
-							  
-					$post = $this->get_list_result($query);
+								c.category_name
+
+							FROM
+								tbl_gallery n,
+								tbl_category c
+
+							WHERE n.cat_id = c.cid AND n.video_status = '1' AND (n.video_title LIKE ? OR n.video_description LIKE ?)
+
+							LIMIT ? OFFSET ?";
+
+					$stmt = $this->mysqli->prepare($query);
+					$stmt->bind_param("ssii", $search_param, $search_param, $limit, $offset);
+					$stmt->execute();
+					$res = $stmt->get_result();
+					$post = array();
+					while ($row = $res->fetch_assoc()) {
+						$post[] = $row;
+					}
 					$count = count($post);
 					$respon = array(
 						'status' => 'ok', 'count' => $count, 'count_total' => $count_total, 'pages' => $page, 'posts' => $post
@@ -659,7 +732,7 @@ require_once("Rest.inc.php");
 			}
 
 		}
-		
+
 		private function get_search_category_results() {
 
 			include "../includes/config.php";
@@ -674,23 +747,35 @@ require_once("Rest.inc.php");
 
 					if ($access_key_received == $api_key) {
 
-						$search = $_GET['search'];
+						$search = isset($_GET['search']) ? $_GET['search'] : '';
+						$search_param = "%$search%";
 
 						if($this->get_request_method() != "GET") $this->response('',406);
 						$limit = isset($this->_request['count']) ? ((int)$this->_request['count']) : 10;
 						$page = isset($this->_request['page']) ? ((int)$this->_request['page']) : 1;
 
 						$offset = ($page * $limit) - $limit;
-						$count_total = $this->get_count_result("SELECT COUNT(DISTINCT c.cid) FROM tbl_category c WHERE (c.category_name LIKE '%$search%')");
-						
-						$query = "SELECT DISTINCT c.cid, c.category_name, c.category_image, COUNT(DISTINCT r.id) as post_count
-						  FROM tbl_category c LEFT JOIN tbl_gallery r ON c.cid = r.cat_id 
-						  
-						   WHERE (c.category_name LIKE '%$search%')
-						  
-						  GROUP BY c.cid ORDER BY c.cid DESC LIMIT $limit OFFSET $offset";
 
-						$post = $this->get_list_result($query);
+						$stmt_total = $this->mysqli->prepare("SELECT COUNT(DISTINCT c.cid) FROM tbl_category c WHERE (c.category_name LIKE ?)");
+						$stmt_total->bind_param("s", $search_param);
+						$stmt_total->execute();
+						$count_total = $stmt_total->get_result()->fetch_row()[0];
+
+						$query = "SELECT DISTINCT c.cid, c.category_name, c.category_image, COUNT(DISTINCT r.id) as post_count
+						  FROM tbl_category c LEFT JOIN tbl_gallery r ON c.cid = r.cat_id
+
+						   WHERE (c.category_name LIKE ?)
+
+						  GROUP BY c.cid ORDER BY c.cid DESC LIMIT ? OFFSET ?";
+
+						$stmt = $this->mysqli->prepare($query);
+						$stmt->bind_param("sii", $search_param, $limit, $offset);
+						$stmt->execute();
+						$res = $stmt->get_result();
+						$post = array();
+						while ($row = $res->fetch_assoc()) {
+							$post[] = $row;
+						}
 						$count = count($post);
 						$respon = array(
 							'status' => 'ok', 'count' => $count, 'count_total' => $count_total, 'pages' => $page, 'posts' => $post
@@ -722,7 +807,7 @@ require_once("Rest.inc.php");
 
 				$access_key_received = $_GET['api_key'];
 
-				if ($access_key_received == $api_key) {			
+				if ($access_key_received == $api_key) {
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 
@@ -749,7 +834,7 @@ require_once("Rest.inc.php");
 				}
 			} else {
 				die ('Forbidden, API Key is Required!');
-			}			
+			}
 
 		}
 
@@ -765,10 +850,10 @@ require_once("Rest.inc.php");
 
 			if (isset($_GET['api_key'])) {
 
-				$access_key_received = $_GET['api_key'];
-				$package_name = $_GET['package_name'];
+				$access_key_received = isset($_GET['api_key']) ? $_GET['api_key'] : '';
+				$package_name = isset($_GET['package_name']) ? $_GET['package_name'] : '';
 
-				if ($access_key_received == $api_key) {			
+				if ($access_key_received == $api_key) {
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 
@@ -779,15 +864,19 @@ require_once("Rest.inc.php");
 
 					$sql_settings = "SELECT onesignal_app_id, fcm_notification_topic, more_apps_url, privacy_policy, providers FROM tbl_settings WHERE id = 1";
 					$sql_ads = "SELECT * FROM tbl_ads WHERE id = 1";
-					$sqlApp = "SELECT package_name, status, redirect_url FROM tbl_app_config WHERE package_name = '$package_name' LIMIT 1 ";
+					$sqlApp = "SELECT package_name, status, redirect_url FROM tbl_app_config WHERE package_name = ? LIMIT 1 ";
 					$sql_placements = "SELECT * FROM tbl_ads_placement WHERE ads_placement_id = 1";
 
 					$settings = $this->get_one_result($sql_settings);
 					$ads = $this->get_one_result($sql_ads);
 					$ads_placement = $this->get_one_result($sql_placements);
 
-					$appCount = count($this->get_list_result($sqlApp));
-					$app = $this->get_one_result($sqlApp);
+					$stmt_app = $this->mysqli->prepare($sqlApp);
+					$stmt_app->bind_param("s", $package_name);
+					$stmt_app->execute();
+					$res_app = $stmt_app->get_result();
+					$appCount = $res_app->num_rows;
+					$app = $res_app->fetch_assoc();
 					$AppArray = array( 'package_name' => '', 'status' => '', 'redirect_url' => '');
 
 					if ($appCount > 0) {
@@ -804,10 +893,10 @@ require_once("Rest.inc.php");
 				}
 			} else {
 				die ('Forbidden, API Key is Required!');
-			}			
+			}
 
-		}		
-		
+		}
+
 		private function get_ads() {
 
 			include "../includes/config.php";
@@ -820,7 +909,7 @@ require_once("Rest.inc.php");
 
 				$access_key_received = $_GET['api_key'];
 
-				if ($access_key_received == $api_key) {			
+				if ($access_key_received == $api_key) {
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 
@@ -837,7 +926,7 @@ require_once("Rest.inc.php");
 				}
 			} else {
 				die ('Forbidden, API Key is Required!');
-			}			
+			}
 
 		}
 
@@ -848,12 +937,12 @@ require_once("Rest.inc.php");
 			$setting_qry    = "SELECT * FROM tbl_settings WHERE id = '1'";
 		    $setting_result = mysqli_query($connect, $setting_qry);
 		    $settings_row   = mysqli_fetch_assoc($setting_result);
-		    $api_key    = $settings_row['api_key']; 
+		    $api_key    = $settings_row['api_key'];
 
 			if (isset($_GET['api_key'])) {
 
 				$access_key_received = $_GET['api_key'];
-				
+
 				if ($access_key_received == $api_key) {
 
 					$sql = "SELECT * FROM tbl_settings WHERE id = 1";
@@ -873,13 +962,17 @@ require_once("Rest.inc.php");
 
 		public function get_user_token() {
 
-		    $user_unique_id = $_GET['user_unique_id'];
+		    $user_unique_id = isset($_GET['user_unique_id']) ? $_GET['user_unique_id'] : '';
 
 			if($this->get_request_method() != "GET") $this->response('', 406);
 
-			$query_post = "SELECT * FROM tbl_fcm_token WHERE user_unique_id = $user_unique_id ";
+			$query_post = "SELECT * FROM tbl_fcm_token WHERE user_unique_id = ? ";
 
-			$post = $this->get_one_result($query_post);
+			$stmt = $this->mysqli->prepare($query_post);
+			$stmt->bind_param("s", $user_unique_id);
+			$stmt->execute();
+			$post = $stmt->get_result()->fetch_assoc();
+			if (!$post) $post = array();
 			$count = count($post);
 			$respon = array(
 				'status' => 'ok', 'response' => $post
@@ -890,14 +983,14 @@ require_once("Rest.inc.php");
 		public function get_package_name() {
 
 			include "../includes/config.php";
-				
+
 			$sql = "SELECT package_name FROM tbl_settings WHERE id = 1";
 			$result = mysqli_query($connect, $sql);
 
 			header( 'Content-Type: application/json; charset=utf-8' );
 			print json_encode(mysqli_fetch_assoc($result));
 
-		}		
+		}
 
 
 		 /*
@@ -916,7 +1009,7 @@ require_once("Rest.inc.php");
 			}
 			$this->response('',204);	// If no records "No Content" status
 		}
-		
+
 		private function get_list_result($query) {
 			$result = array();
 			$r = $this->mysqli->query($query) or die($this->mysqli->error.__LINE__);
@@ -960,17 +1053,17 @@ require_once("Rest.inc.php");
 			$r = $this->mysqli->query($query) or die($this->mysqli->error.__LINE__);
 			if($r->num_rows > 0) $result = $r->fetch_assoc();
 			return $result;
-		}		
-		
+		}
+
 		private function get_count($query) {
 			$r = $this->mysqli->query($query) or die($this->mysqli->error.__LINE__);
 			if($r->num_rows > 0) {
 				$result = $r->fetch_row();
-				$this->response($result[0], 200); 
+				$this->response($result[0], 200);
 			}
 			$this->response('',204);	// If no records "No Content" status
 		}
-		
+
 		private function get_count_result($query) {
 			$r = $this->mysqli->query($query) or die($this->mysqli->error.__LINE__);
 			if($r->num_rows > 0) {
@@ -979,14 +1072,14 @@ require_once("Rest.inc.php");
 			}
 			return 0;
 		}
-		
+
 		private function post_one($obj, $column_names, $table_name) {
 			$keys 		= array_keys($obj);
 			$columns 	= '';
 			$values 	= '';
 			foreach($column_names as $desired_key) { // Check the recipe received. If blank insert blank into the array.
 			  if(!in_array($desired_key, $keys)) {
-			   	$$desired_key = '';
+				$$desired_key = '';
 				} else {
 					$$desired_key = $obj[$desired_key];
 				}
@@ -1017,7 +1110,7 @@ require_once("Rest.inc.php");
 			$values = '';
 			foreach($column_names as $desired_key){ // Check the recipe received. If key does not exist, insert blank into the array.
 			  if(!in_array($desired_key, $keys)) {
-			   	$$desired_key = '';
+				$$desired_key = '';
 				} else {
 					$$desired_key = $obj[$table_name][$desired_key];
 				}
@@ -1057,7 +1150,7 @@ require_once("Rest.inc.php");
 				$this->response('',204);	// If no records "No Content" status
 			}
 		}
-		
+
 		private function responseInvalidParam() {
 			$resp = array("status" => 'Failed', "msg" => 'Invalid Parameter' );
 			$this->response($this->json($resp), 200);
