@@ -5,9 +5,10 @@
 
     require 'assets/plugins/php-jwt-main/src/JWT.php';
     require 'assets/plugins/php-jwt-main/src/Key.php';
+    require_once 'includes/config.php';
 
    function insert($table, $data) {
-        include 'includes/config.php';
+        global $connect;
         $fields = array_keys( $data );  
         $values = array_map(array($connect, 'real_escape_string'), array_values($data) );
         
@@ -16,7 +17,7 @@
     }
 
     function delete($table_name, $where_clause = '') {
-        include 'includes/config.php';
+        global $connect;
         $whereSQL = '';
         if(!empty($where_clause)) {
             if(substr(strtoupper(trim($where_clause)), 0, 5) != 'WHERE') {
@@ -33,7 +34,7 @@
     // Update Data, Where clause is left optional
     function update($table_name, $form_data, $where_clause = '') {
 
-        include 'includes/config.php';
+        global $connect;
         // check for optional where clause
         $whereSQL = '';
         if(!empty($where_clause)) {
@@ -63,7 +64,7 @@
     }
 
     function clean($data) {
-        include 'includes/config.php';
+        global $connect;
         $data = mysqli_real_escape_string($connect, $data);
         return $data; 
     }
