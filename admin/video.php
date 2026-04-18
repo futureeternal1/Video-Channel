@@ -10,28 +10,26 @@
         $arr = $_POST['chk_id'];
         $count = count($arr);
         if ($count > 0) {
-            foreach ($arr as $nid) {
+            $ids = implode(',', array_map('intval', $arr));
 
-                $sql_image = "SELECT video_type, video_thumbnail, video_url FROM tbl_gallery WHERE id = $nid";
-                $img_results = $connect->query($sql_image);
+            $sql_image = "SELECT video_type, video_thumbnail, video_url FROM tbl_gallery WHERE id IN ($ids)";
+            $img_results = $connect->query($sql_image);
 
-                $sql_delete = "DELETE FROM tbl_gallery WHERE id = $nid";
-                $delete = $connect->query($sql_delete);
+            $sql_delete = "DELETE FROM tbl_gallery WHERE id IN ($ids)";
+            $delete = $connect->query($sql_delete);
 
-                if ($delete) {
-                    while ($row = mysqli_fetch_assoc($img_results)) {
-                    	if ($row['video_type'] == 'Upload') {
-                    		unlink('upload/' . $row['video_thumbnail']);
-                    		unlink('upload/video/' . $row['video_url']);
-                    	} else if ($row['video_type'] == 'Url') {
-                    		unlink('upload/' . $row['video_thumbnail']);
-                    	}
+            if ($delete) {
+                while ($row = mysqli_fetch_assoc($img_results)) {
+                    if ($row['video_type'] == 'Upload') {
+                        unlink('upload/' . $row['video_thumbnail']);
+                        unlink('upload/video/' . $row['video_url']);
+                    } else if ($row['video_type'] == 'Url') {
+                        unlink('upload/' . $row['video_thumbnail']);
                     }
-                    $_SESSION['msg'] = "$count Selected videos deleted";
-                } else {
-                    $_SESSION['msg'] = "Error deleting record";
                 }
-
+                $_SESSION['msg'] = "$count Selected videos deleted";
+            } else {
+                $_SESSION['msg'] = "Error deleting record";
             }
         } else {
             $_SESSION['msg'] = "Whoops! no videos selected to delete";
@@ -53,7 +51,7 @@
 
 	$rpp = $postPerPage;
 	$page = intval($_GET["page"]);
-	if($page <= 0) $page = 1;  
+	if($page <= 0) $page = 1;
 	$tcount = mysqli_num_rows($result);
 	$tpages = ($tcount) ? ceil($tcount / $rpp) : 1;
 	$count = 0;
@@ -61,7 +59,7 @@
 	$no_urut = ($page-1) * $rpp;
 
     if (isset($_GET['page']) && isset($_GET['disable'])) {
-		$data = array('video_status' => '0');	
+		$data = array('video_status' => '0');
 		$update = update('tbl_gallery', $data, "WHERE id = '".$_GET['disable']."'");
 		if ($update > 0) {
 	        $_SESSION['msg'] = "Video successfully disabled";
@@ -71,7 +69,7 @@
     }
 
     if (isset($_GET['page']) && isset($_GET['enable'])) {
-		$data = array('video_status' => '1');	
+		$data = array('video_status' => '1');
 		$update = update('tbl_gallery', $data, "WHERE id = '".$_GET['enable']."'");
 		if ($update > 0) {
 	        $_SESSION['msg'] = "Video successfully enabled";
@@ -81,7 +79,7 @@
     }
 
     if (isset($_POST['jump_to_page'])) {
-    	$pageNumber = clean($_POST['page_number']); 
+	$pageNumber = clean($_POST['page_number']);
 		header('Location:video.php?page='.$pageNumber);
 		exit;
     }
@@ -141,7 +139,7 @@
 							<div style="margin-left: 8px; margin-top: -36px; margin-bottom: 10px;">
 								<button type="submit" name="submit" id="submit" class="button button-rounded waves-effect waves-float" onclick="return confirm('Are you sure want to delete all selected videos?')">Delete selected items(s)</button>&nbsp;&nbsp;
 								<a href="" data-toggle="modal" data-target="#modal-jump-to-page"><button type="button" class="button button-rounded waves-effect waves-float">Jump to Page</button></a>
-							</div>				
+							</div>
 
 							<table class='table table-hover table-striped'>
 								<thead>
@@ -238,7 +236,7 @@
 										</td>
 									</tr>
 									<?php
-									$i++; 
+									$i++;
 									$count++;
 								}
 								?>
