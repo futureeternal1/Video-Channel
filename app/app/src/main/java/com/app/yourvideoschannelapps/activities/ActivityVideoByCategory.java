@@ -305,19 +305,20 @@ public class ActivityVideoByCategory extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
+        int itemId = menuItem.getItemId();
+        if (itemId == android.R.id.home) {
 
-            case android.R.id.home:
+
                 onBackPressedDispatcher.onBackPressed();
                 return true;
 
-            case R.id.menu_search:
+            } else if (itemId == R.id.menu_search) {
                 Intent intent = new Intent(getApplicationContext(), ActivitySearch.class);
                 startActivity(intent);
                 adsManager.destroyBannerAd();
                 return true;
 
-            case R.id.menu_sort:
+            } else if (itemId == R.id.menu_sort) {
                 String[] items = getResources().getStringArray(R.array.dialog_single_choice_array);
                 int itemSelected = sharedPref.getCurrentSortVideos();
                 new MaterialAlertDialogBuilder(ActivityVideoByCategory.this)
@@ -333,7 +334,7 @@ public class ActivityVideoByCategory extends AppCompatActivity {
                         .show();
                 return true;
 
-            default:
+            } else {
                 return super.onOptionsItemSelected(menuItem);
         }
     }

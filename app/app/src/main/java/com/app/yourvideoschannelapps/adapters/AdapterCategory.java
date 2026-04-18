@@ -84,7 +84,7 @@ public class AdapterCategory extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         if (AppConfig.ENABLE_VIDEO_COUNT_ON_CATEGORY) {
             vItem.video_count.setVisibility(View.VISIBLE);
-            vItem.video_count.setText(c.video_count + " " + context.getResources().getString(R.string.video_count_text));
+            vItem.video_count.setText(context.getResources().getString(R.string.video_count_text, c.video_count));
         } else {
             vItem.video_count.setVisibility(View.GONE);
         }

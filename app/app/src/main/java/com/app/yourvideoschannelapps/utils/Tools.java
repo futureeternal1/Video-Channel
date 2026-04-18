@@ -207,7 +207,7 @@ public class Tools {
     public static String withSuffix(long count) {
         if (count < 1000) return "" + count;
         int exp = (int) (Math.log(count) / Math.log(1000));
-        return String.format("%.1f%c", count / Math.pow(1000, exp), "KMGTPE".charAt(exp - 1));
+        return String.format(java.util.Locale.US, "%.1f%c", count / Math.pow(1000, exp), "KMGTPE".charAt(exp - 1));
     }
 
     public static String decode(String code) {
@@ -222,7 +222,7 @@ public class Tools {
     public static long timeStringtoMilis(String time) {
         long milis = 0;
         try {
-            SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US);
             Date date = sd.parse(time);
             milis = date.getTime();
         } catch (Exception e) {
@@ -303,8 +303,8 @@ public class Tools {
 
     public static String getFormatedDateSimple(String date_str) {
         if (date_str != null && !date_str.trim().equals("")) {
-            SimpleDateFormat oldFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            SimpleDateFormat newFormat = new SimpleDateFormat("MMMM dd, yyyy");
+            SimpleDateFormat oldFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", java.util.Locale.US);
+            SimpleDateFormat newFormat = new SimpleDateFormat("MMMM dd, yyyy", java.util.Locale.US);
             try {
                 String newStr = newFormat.format(oldFormat.parse(date_str));
                 return newStr;
@@ -319,7 +319,7 @@ public class Tools {
     public static CharSequence getTimeAgo(String date_str) {
         if (date_str != null && !date_str.trim().equals("")) {
             //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US);
             //sdf.setTimeZone(TimeZone.getTimeZone("CET"));
             try {
                 long time = sdf.parse(date_str).getTime();
@@ -575,7 +575,7 @@ public class Tools {
         LayoutInflater layoutInflater = LayoutInflater.from(activity);
         View view = layoutInflater.inflate(R.layout.dialog_about, null);
         TextView txtAppVersion = view.findViewById(R.id.txt_app_version);
-        txtAppVersion.setText(activity.getString(R.string.title_settings_version) + " " + BuildConfig.VERSION_NAME);
+        txtAppVersion.setText(activity.getString(R.string.title_settings_version, BuildConfig.VERSION_NAME));
         final MaterialAlertDialogBuilder alert = new MaterialAlertDialogBuilder(activity);
         alert.setView(view);
         alert.setPositiveButton(R.string.dialog_ok, (dialog, which) -> dialog.dismiss());
@@ -620,18 +620,12 @@ public class Tools {
     }
 
     public static void setNativeAdStyle(Activity activity, LinearLayout nativeAdView, String style) {
-        switch (style) {
-            case "small":
-            case "radio":
-                nativeAdView.addView(View.inflate(activity, com.solodroid.ads.sdk.R.layout.view_native_ad_radio, null));
-                break;
-            case "news":
-            case "medium":
-                nativeAdView.addView(View.inflate(activity, com.solodroid.ads.sdk.R.layout.view_native_ad_news, null));
-                break;
-            default:
-                nativeAdView.addView(View.inflate(activity, com.solodroid.ads.sdk.R.layout.view_native_ad_medium, null));
-                break;
+        if (style.equals("small") || style.equals("radio")) {
+            nativeAdView.addView(View.inflate(activity, com.solodroid.ads.sdk.R.layout.view_native_ad_radio, null));
+        } else if (style.equals("news") || style.equals("medium")) {
+            nativeAdView.addView(View.inflate(activity, com.solodroid.ads.sdk.R.layout.view_native_ad_news, null));
+        } else {
+            nativeAdView.addView(View.inflate(activity, com.solodroid.ads.sdk.R.layout.view_native_ad_medium, null));
         }
     }
 

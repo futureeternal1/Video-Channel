@@ -33,16 +33,16 @@ public class ViewPagerHelper {
         viewPager.setAdapter(new AdapterNavigationDefault(activity.getSupportFragmentManager()));
         viewPager.setOffscreenPageLimit(pagerNumber);
         navigation.setOnItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.navigation_home:
-                    viewPager.setCurrentItem(0);
-                    return true;
-                case R.id.navigation_category:
-                    viewPager.setCurrentItem(1);
-                    return true;
-                case R.id.navigation_favorite:
-                    viewPager.setCurrentItem(2);
-                    return true;
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_home) {
+                viewPager.setCurrentItem(0);
+                return true;
+            } else if (itemId == R.id.navigation_category) {
+                viewPager.setCurrentItem(1);
+                return true;
+            } else if (itemId == R.id.navigation_favorite) {
+                viewPager.setCurrentItem(2);
+                return true;
             }
             return false;
         });
@@ -88,16 +88,16 @@ public class ViewPagerHelper {
         viewPager.setAdapter(new AdapterNavigationCategory(activity.getSupportFragmentManager()));
         viewPager.setOffscreenPageLimit(pagerNumber);
         navigation.setOnItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.navigation_category:
-                    viewPager.setCurrentItem(0);
-                    return true;
-                case R.id.navigation_home:
-                    viewPager.setCurrentItem(1);
-                    return true;
-                case R.id.navigation_favorite:
-                    viewPager.setCurrentItem(2);
-                    return true;
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_category) {
+                viewPager.setCurrentItem(0);
+                return true;
+            } else if (itemId == R.id.navigation_home) {
+                viewPager.setCurrentItem(1);
+                return true;
+            } else if (itemId == R.id.navigation_favorite) {
+                viewPager.setCurrentItem(2);
+                return true;
             }
             return false;
         });
@@ -143,16 +143,16 @@ public class ViewPagerHelper {
         viewPager.setAdapter(new AdapterNavigationDefault(activity.getSupportFragmentManager()));
         viewPager.setOffscreenPageLimit(pagerNumber);
         navigation.setOnItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.navigation_home:
-                    viewPager.setCurrentItem(0);
-                    return true;
-                case R.id.navigation_category:
-                    viewPager.setCurrentItem(1);
-                    return true;
-                case R.id.navigation_favorite:
-                    viewPager.setCurrentItem(2);
-                    return true;
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_home) {
+                viewPager.setCurrentItem(0);
+                return true;
+            } else if (itemId == R.id.navigation_category) {
+                viewPager.setCurrentItem(1);
+                return true;
+            } else if (itemId == R.id.navigation_favorite) {
+                viewPager.setCurrentItem(2);
+                return true;
             }
             return false;
         });
@@ -198,16 +198,16 @@ public class ViewPagerHelper {
         viewPager.setAdapter(new AdapterNavigationCategory(activity.getSupportFragmentManager()));
         viewPager.setOffscreenPageLimit(pagerNumber);
         navigation.setOnItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.navigation_category:
-                    viewPager.setCurrentItem(0);
-                    return true;
-                case R.id.navigation_home:
-                    viewPager.setCurrentItem(1);
-                    return true;
-                case R.id.navigation_favorite:
-                    viewPager.setCurrentItem(2);
-                    return true;
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_category) {
+                viewPager.setCurrentItem(0);
+                return true;
+            } else if (itemId == R.id.navigation_home) {
+                viewPager.setCurrentItem(1);
+                return true;
+            } else if (itemId == R.id.navigation_favorite) {
+                viewPager.setCurrentItem(2);
+                return true;
             }
             return false;
         });
@@ -258,13 +258,12 @@ public class ViewPagerHelper {
         @NonNull
         @Override
         public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    return new FragmentRecent();
-                case 1:
-                    return new FragmentCategory();
-                case 2:
-                    return new FragmentFavorite();
+            if (position == 0) {
+                return new FragmentRecent();
+            } else if (position == 1) {
+                return new FragmentCategory();
+            } else if (position == 2) {
+                return new FragmentFavorite();
             }
             return null;
         }
@@ -286,13 +285,12 @@ public class ViewPagerHelper {
         @NonNull
         @Override
         public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    return new FragmentCategory();
-                case 1:
-                    return new FragmentRecent();
-                case 2:
-                    return new FragmentFavorite();
+            if (position == 0) {
+                return new FragmentCategory();
+            } else if (position == 1) {
+                return new FragmentRecent();
+            } else if (position == 2) {
+                return new FragmentFavorite();
             }
             return null;
         }

@@ -146,7 +146,7 @@ public class AdapterSuggested extends RecyclerView.Adapter<RecyclerView.ViewHold
             vItem.videoTitle.setText(video.video_title);
             vItem.videoDuration.setText(video.video_duration);
             if (AppConfig.ENABLE_VIEW_COUNT) {
-                vItem.totalViews.setText(Tools.withSuffix(video.total_views) + " " + context.getResources().getString(R.string.views_count));
+                vItem.totalViews.setText(context.getResources().getString(R.string.views_count, Tools.withSuffix(video.total_views)));
             } else {
                 vItem.lytView.setVisibility(View.GONE);
             }

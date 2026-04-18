@@ -145,7 +145,7 @@ public class ActivityVideoDetailOffline extends AppCompatActivity {
         txtDuration.setText(strDuration);
 
         if (AppConfig.ENABLE_VIEW_COUNT) {
-            txtTotalViews.setText(Tools.withSuffix(totalViews) + " " + getResources().getString(R.string.views_count));
+            txtTotalViews.setText(getResources().getString(R.string.views_count, Tools.withSuffix(totalViews)));
         } else {
             lytView.setVisibility(View.GONE);
         }
@@ -265,12 +265,12 @@ public class ActivityVideoDetailOffline extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case android.R.id.home:
+        if (menuItem.getItemId() == android.R.id.home) {
+
                 onBackPressedDispatcher.onBackPressed();
                 return true;
 
-            default:
+            } else {
                 return super.onOptionsItemSelected(menuItem);
         }
     }

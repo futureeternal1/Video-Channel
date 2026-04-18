@@ -231,22 +231,17 @@ public class MainActivity extends AppCompatActivity implements DefaultLifecycleO
     public void showPopupMenu(View view) {
         PopupMenu popupMenu = new PopupMenu(MainActivity.this, view);
         popupMenu.setOnMenuItemClickListener(menuItem -> {
-            switch (menuItem.getItemId()) {
-                case R.id.menu_settings:
-                    startActivity(new Intent(getApplicationContext(), ActivitySettings.class));
-                    break;
-                case R.id.menu_share:
-                    Tools.shareApp(this);
-                    break;
-                case R.id.menu_rate:
-                    Tools.rateUs(this);
-                    break;
-                case R.id.menu_more:
-                    Tools.moreApps(this, sharedPref.getMoreAppsUrl());
-                    break;
-                case R.id.menu_about:
-                    Tools.showAboutDialog(this);
-                    break;
+            int itemId = menuItem.getItemId();
+            if (itemId == R.id.menu_settings) {
+                startActivity(new Intent(getApplicationContext(), ActivitySettings.class));
+            } else if (itemId == R.id.menu_share) {
+                Tools.shareApp(this);
+            } else if (itemId == R.id.menu_rate) {
+                Tools.rateUs(this);
+            } else if (itemId == R.id.menu_more) {
+                Tools.moreApps(this, sharedPref.getMoreAppsUrl());
+            } else if (itemId == R.id.menu_about) {
+                Tools.showAboutDialog(this);
             }
             return true;
         });

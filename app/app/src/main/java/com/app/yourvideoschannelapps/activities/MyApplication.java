@@ -21,6 +21,8 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.multidex.MultiDex;
 
+import java.lang.ref.WeakReference;
+
 import com.app.yourvideoschannelapps.R;
 import com.app.yourvideoschannelapps.config.AppConfig;
 import com.app.yourvideoschannelapps.databases.prefs.AdsPref;
@@ -50,7 +52,7 @@ public class MyApplication extends Application {
     long unique_id = -1;
     FirebaseAnalytics mFirebaseAnalytics;
 
-    Activity currentActivity;
+    WeakReference<Activity> currentActivity;
     AdsPref adsPref;
 
     public MyApplication() {
@@ -110,37 +112,39 @@ public class MyApplication extends Application {
             if (Constant.isAppOpen) {
                 if (adsPref.getIsAppOpenAdOnResume()) {
                     if (adsPref.getAdStatus().equals(AD_STATUS_ON)) {
-                        switch (adsPref.getMainAds()) {
-                            case ADMOB:
-                                if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
-                                    if (!currentActivity.getIntent().hasExtra("unique_id")) {
-                                        appOpenAdMob.showAdIfAvailable(currentActivity, adsPref.getAdMobAppOpenAdId());
+                        if (currentActivity != null && currentActivity.get() != null) {
+                            switch (adsPref.getMainAds()) {
+                                case ADMOB:
+                                    if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                                        if (!currentActivity.get().getIntent().hasExtra("unique_id")) {
+                                            appOpenAdMob.showAdIfAvailable(currentActivity.get(), adsPref.getAdMobAppOpenAdId());
+                                        }
                                     }
-                                }
-                                break;
-                            case GOOGLE_AD_MANAGER:
-                                if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
-                                    if (!currentActivity.getIntent().hasExtra("unique_id")) {
-                                        appOpenAdManager.showAdIfAvailable(currentActivity, adsPref.getAdManagerAppOpenAdId());
+                                    break;
+                                case GOOGLE_AD_MANAGER:
+                                    if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                                        if (!currentActivity.get().getIntent().hasExtra("unique_id")) {
+                                            appOpenAdManager.showAdIfAvailable(currentActivity.get(), adsPref.getAdManagerAppOpenAdId());
+                                        }
                                     }
-                                }
-                                break;
-                            case APPLOVIN:
-                            case APPLOVIN_MAX:
-                                if (!adsPref.getAppLovinAppOpenAdUnitId().equals("0")) {
-                                    if (!currentActivity.getIntent().hasExtra("unique_id")) {
-                                        appOpenAdAppLovin.showAdIfAvailable(currentActivity, adsPref.getAppLovinAppOpenAdUnitId());
+                                    break;
+                                case APPLOVIN:
+                                case APPLOVIN_MAX:
+                                    if (!adsPref.getAppLovinAppOpenAdUnitId().equals("0")) {
+                                        if (!currentActivity.get().getIntent().hasExtra("unique_id")) {
+                                            appOpenAdAppLovin.showAdIfAvailable(currentActivity.get(), adsPref.getAppLovinAppOpenAdUnitId());
+                                        }
                                     }
-                                }
-                                break;
+                                    break;
 
-                            case WORTISE:
-                                if (!adsPref.getWortiseAppOpenId().equals("0")) {
-                                    if (!currentActivity.getIntent().hasExtra("unique_id")) {
-                                        appOpenAdWortise.showAdIfAvailable(currentActivity, adsPref.getWortiseAppOpenId());
+                                case WORTISE:
+                                    if (!adsPref.getWortiseAppOpenId().equals("0")) {
+                                        if (!currentActivity.get().getIntent().hasExtra("unique_id")) {
+                                            appOpenAdWortise.showAdIfAvailable(currentActivity.get(), adsPref.getWortiseAppOpenId());
+                                        }
                                     }
-                                }
-                                break;
+                                    break;
+                            }
                         }
                     }
                 }
@@ -161,14 +165,14 @@ public class MyApplication extends Application {
                         case ADMOB:
                             if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
                                 if (!appOpenAdMob.isShowingAd) {
-                                    currentActivity = activity;
+                                    currentActivity = new WeakReference<>(activity);
                                 }
                             }
                             break;
                         case GOOGLE_AD_MANAGER:
                             if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
                                 if (!appOpenAdManager.isShowingAd) {
-                                    currentActivity = activity;
+                                    currentActivity = new WeakReference<>(activity);
                                 }
                             }
                             break;
@@ -176,14 +180,14 @@ public class MyApplication extends Application {
                         case APPLOVIN_MAX:
                             if (!adsPref.getAppLovinAppOpenAdUnitId().equals("0")) {
                                 if (!appOpenAdAppLovin.isShowingAd) {
-                                    currentActivity = activity;
+                                    currentActivity = new WeakReference<>(activity);
                                 }
                             }
                             break;
                         case WORTISE:
                             if (!adsPref.getWortiseAppOpenId().equals("0")) {
                                 if (!appOpenAdWortise.isShowingAd) {
-                                    currentActivity = activity;
+                                    currentActivity = new WeakReference<>(activity);
                                 }
                             }
                             break;

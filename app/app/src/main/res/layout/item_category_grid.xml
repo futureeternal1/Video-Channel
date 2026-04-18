@@ -11,6 +11,7 @@
     card_view:cardPreventCornerOverlap="false">
 
     <LinearLayout
+    xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/lyt_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,6 +38,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
+    xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
@@ -50,7 +52,7 @@
                 android:ellipsize="end"
                 android:gravity="center"
                 android:maxLines="1"
-                android:text="Category Name"
+                tools:text="Category Name"
                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Body2"
                 android:textSize="@dimen/text_title_size"
                 android:textStyle="bold" />
@@ -60,7 +62,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="10"
+                tools:text="10"
                 android:textSize="@dimen/text_sub_title_size" />
 
         </LinearLayout>

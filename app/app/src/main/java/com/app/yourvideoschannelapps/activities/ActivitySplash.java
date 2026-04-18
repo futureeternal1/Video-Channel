@@ -233,39 +233,33 @@ public class ActivitySplash extends AppCompatActivity {
             }
         } else {
             if (adsPref.getAdStatus().equals(AD_STATUS_ON) && adsPref.getIsAppOpenAdOnStart()) {
-                switch (adsPref.getMainAds()) {
-                    case ADMOB:
-                        if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
-                            ((MyApplication) getApplication()).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
-                        } else {
-                            startMainActivity();
-                        }
-                        break;
-                    case GOOGLE_AD_MANAGER:
-                        if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
-                            ((MyApplication) getApplication()).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
-                        } else {
-                            startMainActivity();
-                        }
-                        break;
-                    case APPLOVIN:
-                    case APPLOVIN_MAX:
-                        if (!adsPref.getAppLovinAppOpenAdUnitId().equals("0")) {
-                            ((MyApplication) getApplication()).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
-                        } else {
-                            startMainActivity();
-                        }
-                        break;
-                    case WORTISE:
-                        if (!adsPref.getWortiseAppOpenId().equals("0")) {
-                            ((MyApplication) getApplication()).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
-                        } else {
-                            startMainActivity();
-                        }
-                        break;
-                    default:
+                String mainAds = adsPref.getMainAds();
+                if (mainAds.equals(ADMOB)) {
+                    if (!adsPref.getAdMobAppOpenAdId().equals("0")) {
+                        ((MyApplication) getApplication()).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
+                    } else {
                         startMainActivity();
-                        break;
+                    }
+                } else if (mainAds.equals(GOOGLE_AD_MANAGER)) {
+                    if (!adsPref.getAdManagerAppOpenAdId().equals("0")) {
+                        ((MyApplication) getApplication()).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
+                    } else {
+                        startMainActivity();
+                    }
+                } else if (mainAds.equals(APPLOVIN) || mainAds.equals(APPLOVIN_MAX)) {
+                    if (!adsPref.getAppLovinAppOpenAdUnitId().equals("0")) {
+                        ((MyApplication) getApplication()).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
+                    } else {
+                        startMainActivity();
+                    }
+                } else if (mainAds.equals(WORTISE)) {
+                    if (!adsPref.getWortiseAppOpenId().equals("0")) {
+                        ((MyApplication) getApplication()).showAdIfAvailable(ActivitySplash.this, this::startMainActivity);
+                    } else {
+                        startMainActivity();
+                    }
+                } else {
+                    startMainActivity();
                 }
             } else {
                 startMainActivity();

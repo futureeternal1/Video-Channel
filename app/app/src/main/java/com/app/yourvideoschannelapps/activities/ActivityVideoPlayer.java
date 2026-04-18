@@ -222,23 +222,21 @@ public class ActivityVideoPlayer extends AppCompatActivity {
     private MediaSource buildMediaSource(Uri uri) {
         MediaItem mMediaItem = MediaItem.fromUri(Uri.parse(String.valueOf(uri)));
         int type = TextUtils.isEmpty(null) ? Util.inferContentType(uri) : Util.inferContentType("." + null);
-        switch (type) {
-            case C.TYPE_DASH:
-                return new DashMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(mMediaItem);
-            case C.TYPE_HLS:
-                return new HlsMediaSource.Factory(dataSourceFactory)
-                        .setAllowChunklessPreparation(true)
-                        .createMediaSource(mMediaItem);
-            case C.TYPE_OTHER:
-                return new ProgressiveMediaSource.Factory(dataSourceFactory, new DefaultExtractorsFactory())
-                        .createMediaSource(mMediaItem);
-            case C.TYPE_RTSP:
-                return new RtspMediaSource.Factory()
-                        .createMediaSource(MediaItem.fromUri(uri));
-            default: {
-                throw new IllegalStateException("Unsupported type: " + type);
-            }
+        if (type == C.TYPE_DASH) {
+            return new DashMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(mMediaItem);
+        } else if (type == C.TYPE_HLS) {
+            return new HlsMediaSource.Factory(dataSourceFactory)
+                    .setAllowChunklessPreparation(true)
+                    .createMediaSource(mMediaItem);
+        } else if (type == C.TYPE_OTHER) {
+            return new ProgressiveMediaSource.Factory(dataSourceFactory, new DefaultExtractorsFactory())
+                    .createMediaSource(mMediaItem);
+        } else if (type == C.TYPE_RTSP) {
+            return new RtspMediaSource.Factory()
+                    .createMediaSource(MediaItem.fromUri(uri));
+        } else {
+            throw new IllegalStateException("Unsupported type: " + type);
         }
     }
 

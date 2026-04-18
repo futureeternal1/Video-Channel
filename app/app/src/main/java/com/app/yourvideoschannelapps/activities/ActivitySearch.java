@@ -234,12 +234,11 @@ public class ActivitySearch extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case android.R.id.home:
-                onBackPressedDispatcher.onBackPressed();
-                return true;
-            default:
-                return super.onOptionsItemSelected(menuItem);
+        if (menuItem.getItemId() == android.R.id.home) {
+            onBackPressedDispatcher.onBackPressed();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(menuItem);
         }
     }
 
