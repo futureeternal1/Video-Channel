@@ -173,7 +173,7 @@ public class AdapterVideo extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             vItem.videoTitle.setText(video.video_title);
             vItem.videoDuration.setText(video.video_duration);
             if (AppConfig.ENABLE_VIEW_COUNT) {
-                vItem.totalViews.setText(Tools.withSuffix(video.total_views) + " " + context.getResources().getString(R.string.views_count));
+                vItem.totalViews.setText(context.getResources().getString(R.string.views_count, Tools.withSuffix(video.total_views)));
             } else {
                 vItem.lytView.setVisibility(View.GONE);
             }
@@ -352,24 +352,13 @@ public class AdapterVideo extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     int lastPos = getLastVisibleItem(layoutManager.findLastVisibleItemPositions(null));
                     if (!loading && lastPos == getItemCount() - 1 && onLoadMoreListener != null) {
                         if (adsPref.getIsNativeAdPostList()) {
-                            switch (adsPref.getMainAds()) {
-                                case ADMOB:
-                                case GOOGLE_AD_MANAGER:
-                                case FAN:
-                                case STARTAPP:
-                                case APPLOVIN:
-                                case APPLOVIN_MAX:
-                                case APPLOVIN_DISCOVERY:
-                                case WORTISE: {
-                                    int current_page = getItemCount() / (AppConfig.LOAD_MORE + 1); //posts per page plus 1 Ad
-                                    onLoadMoreListener.onLoadMore(current_page);
-                                    break;
-                                }
-                                default: {
-                                    int current_page = getItemCount() / (AppConfig.LOAD_MORE);
-                                    onLoadMoreListener.onLoadMore(current_page);
-                                    break;
-                                }
+                            String mainAds = adsPref.getMainAds();
+                            if (mainAds.equals(ADMOB) || mainAds.equals(GOOGLE_AD_MANAGER) || mainAds.equals(FAN) || mainAds.equals(STARTAPP) || mainAds.equals(APPLOVIN) || mainAds.equals(APPLOVIN_MAX) || mainAds.equals(APPLOVIN_DISCOVERY) || mainAds.equals(WORTISE)) {
+                                int current_page = getItemCount() / (AppConfig.LOAD_MORE + 1); //posts per page plus 1 Ad
+                                onLoadMoreListener.onLoadMore(current_page);
+                            } else {
+                                int current_page = getItemCount() / (AppConfig.LOAD_MORE);
+                                onLoadMoreListener.onLoadMore(current_page);
                             }
                         } else {
                             int current_page = getItemCount() / (AppConfig.LOAD_MORE);

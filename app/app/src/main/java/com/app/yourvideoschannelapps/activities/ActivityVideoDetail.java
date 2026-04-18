@@ -230,7 +230,7 @@ public class ActivityVideoDetail extends AppCompatActivity {
         txtDuration.setText(video.video_duration);
 
         if (AppConfig.ENABLE_VIEW_COUNT) {
-            txtTotalViews.setText(Tools.withSuffix(video.total_views) + " " + getResources().getString(R.string.views_count));
+            txtTotalViews.setText(getResources().getString(R.string.views_count, Tools.withSuffix(video.total_views)));
         } else {
             lytView.setVisibility(View.GONE);
         }
@@ -405,15 +405,14 @@ public class ActivityVideoDetail extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case android.R.id.home:
-                onBackPressedDispatcher.onBackPressed();
-                break;
+        if (menuItem.getItemId() == android.R.id.home) {
 
-            default:
+                onBackPressedDispatcher.onBackPressed();
+                return true;
+
+            } else {
                 return super.onOptionsItemSelected(menuItem);
         }
-        return true;
     }
 
     @SuppressWarnings("deprecation")

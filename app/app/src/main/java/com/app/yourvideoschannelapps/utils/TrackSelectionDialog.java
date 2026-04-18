@@ -254,15 +254,14 @@ public final class TrackSelectionDialog extends DialogFragment {
     }
 
     private static String getTrackTypeString(Resources resources, @C.TrackType int trackType) {
-        switch (trackType) {
-            case C.TRACK_TYPE_VIDEO:
-                return resources.getString(com.google.android.exoplayer2.ui.R.string.exo_track_selection_title_video);
-            case C.TRACK_TYPE_AUDIO:
-                return resources.getString(com.google.android.exoplayer2.ui.R.string.exo_track_selection_title_audio);
-            case C.TRACK_TYPE_TEXT:
-                return resources.getString(com.google.android.exoplayer2.ui.R.string.exo_track_selection_title_text);
-            default:
-                throw new IllegalArgumentException();
+        if (trackType == C.TRACK_TYPE_VIDEO) {
+            return resources.getString(com.google.android.exoplayer2.ui.R.string.exo_track_selection_title_video);
+        } else if (trackType == C.TRACK_TYPE_AUDIO) {
+            return resources.getString(com.google.android.exoplayer2.ui.R.string.exo_track_selection_title_audio);
+        } else if (trackType == C.TRACK_TYPE_TEXT) {
+            return resources.getString(com.google.android.exoplayer2.ui.R.string.exo_track_selection_title_text);
+        } else {
+            throw new IllegalArgumentException();
         }
     }
 
