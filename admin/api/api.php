@@ -811,16 +811,19 @@ require_once("Rest.inc.php");
 
 					if($this->get_request_method() != "GET") $this->response('',406);
 
-					$sql_api_key = "SELECT * FROM tbl_settings WHERE id = 1";
-					$key_result = $connect->query($sql_api_key);
-					$key_row = $key_result->fetch_assoc();
-					$youtube_api_key = encrypt($key_row['youtube_api_key']);
+					$youtube_api_key = encrypt($settings_row['youtube_api_key']);
 
-					$sql_settings = "SELECT package_name, onesignal_app_id, fcm_notification_topic, more_apps_url, privacy_policy  FROM tbl_settings WHERE id = 1";
+					$settings = array(
+						'package_name' => $settings_row['package_name'],
+						'onesignal_app_id' => $settings_row['onesignal_app_id'],
+						'fcm_notification_topic' => $settings_row['fcm_notification_topic'],
+						'more_apps_url' => $settings_row['more_apps_url'],
+						'privacy_policy' => $settings_row['privacy_policy']
+					);
+
 					$sql_ads = "SELECT * FROM tbl_ads WHERE id = 1";
 					$sql_placements = "SELECT * FROM tbl_ads_placement WHERE ads_placement_id = 1";
 
-					$settings = $this->get_one_result($sql_settings);
 					$ads = $this->get_one_result($sql_ads);
 					$ads_placement = $this->get_one_result($sql_placements);
 
